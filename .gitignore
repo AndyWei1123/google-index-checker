@@ -1,0 +1,14 @@
+# API key 與本機資料，不要上傳
+.env
+cache.json
+cache.json.tmp
+output/
+
+# Python
+__pycache__/
+*.pyc
+
+# 系統檔
+.DS_Store
+Thumbs.db
+desktop.ini

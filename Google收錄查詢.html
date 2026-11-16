@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google 收錄查詢</title>
+<style>
+:root{
+  --bg:#f7f6f2; --surface:#ffffff; --surface-2:#f0eee8; --text:#1d1d1b; --muted:#66645e;
+  --line:#e2dfd6; --accent:#1f6f5c; --accent-hover:#185a4a; --accent-soft:#e3f1ec;
+  --warn:#9a5b00; --warn-soft:#fbf0de; --bad:#a33a2b; --bad-soft:#f8e4e0; --on-accent:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151614; --surface:#1d1e1b; --surface-2:#262723; --text:#ecebe6; --muted:#a3a198;
+    --line:#35362f; --accent:#5cc4a6; --accent-hover:#79d3b9; --accent-soft:#1d3a32;
+    --warn:#e3aa55; --warn-soft:#3a2e1a; --bad:#ec8a7b; --bad-soft:#3d2420; --on-accent:#0f1a16;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151614; --surface:#1d1e1b; --surface-2:#262723; --text:#ecebe6; --muted:#a3a198;
+  --line:#35362f; --accent:#5cc4a6; --accent-hover:#79d3b9; --accent-soft:#1d3a32;
+  --warn:#e3aa55; --warn-soft:#3a2e1a; --bad:#ec8a7b; --bad-soft:#3d2420; --on-accent:#0f1a16;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:15px;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 16px 64px}
+h1{font-size:24px;margin:0}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.spent{font-size:13px;color:var(--muted);text-align:right}
+.spent b{color:var(--text);font-size:16px}
+.banner{border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:14px}
+.banner.demo{background:var(--warn-soft);color:var(--warn)}
+.banner.err{background:var(--bad-soft);color:var(--bad)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row input[type=password],.row input[type=text]{flex:1;min-width:200px}
+textarea,input[type=password],input[type=text],select{font:inherit;color:var(--text);background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{width:100%;min-height:200px;resize:vertical;font-family:Consolas,"SF Mono",Menlo,monospace;font-size:13px;line-height:1.6}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+label.lbl{font-weight:600;display:block;margin-bottom:6px}
+.hint{font-size:13px;color:var(--muted);margin-top:6px}
+.keyok{font-size:14px;color:var(--accent);font-weight:600}
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:12px}
+.controls .grow{flex:1}
+.parsed{font-size:14px}
+.parsed b{color:var(--accent)}
+.chk{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+button{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);
+  padding:8px 16px;cursor:pointer;white-space:nowrap}
+button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+button.primary:hover:not(:disabled){background:var(--accent-hover);color:var(--on-accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.small{padding:4px 12px;font-size:13px}
+.bar-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:13px;border-radius:999px;padding:3px 12px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.progress{height:6px;background:var(--surface-2);border-radius:999px;overflow:hidden;margin-bottom:12px}
+.progress div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);color:var(--muted);font-weight:600;font-size:13px}
+tbody tr:last-child td{border-bottom:none}
+td.n{color:var(--muted);width:44px}
+td.u{word-break:break-all;min-width:260px}
+td.u a{color:var(--text);text-decoration:none}
+td.u a:hover{color:var(--accent);text-decoration:underline}
+td.s{width:110px}
+td.note{color:var(--muted);font-size:13px;word-break:break-all;min-width:160px}
+td.t{color:var(--muted);font-size:12px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:999px;font-weight:600;white-space:nowrap}
+.tag.ok{background:var(--accent-soft);color:var(--accent)}
+.tag.no,.tag.err{background:var(--bad-soft);color:var(--bad)}
+.tag.wait{background:var(--surface-2);color:var(--muted)}
+.tag.run{background:var(--warn-soft);color:var(--warn)}
+.cache{font-size:11px;color:var(--muted);margin-left:4px}
+.tag.new{background:var(--warn-soft);color:var(--warn)}
+.tag.submit{background:var(--bad);color:var(--surface)}
+td.pd{white-space:nowrap;font-size:13px}
+td.pd small{display:block;color:var(--muted);font-size:11px}
+td.adv{width:110px}
+input.days{width:72px;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+details{margin-top:10px;font-size:14px}
+summary{cursor:pointer;color:var(--muted)}
+.section-title{font-weight:600;margin:16px 0 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.section-title .hint{margin:0;font-weight:400}
+.domains{margin-bottom:6px}
+.domains td.num,.domains th.num{text-align:right;white-space:nowrap}
+.domains tbody tr{cursor:pointer}
+.domains tbody tr:hover{background:var(--surface-2)}
+.domains tbody tr.on{background:var(--accent-soft)}
+.domains td.d{font-weight:600;min-width:170px;overflow-wrap:anywhere}
+.rate{display:flex;align-items:center;gap:8px;min-width:150px}
+.rate .bar{flex:1;height:8px;background:var(--bad-soft);border-radius:999px;overflow:hidden}
+.rate .bar i{display:block;height:100%;background:var(--accent)}
+.rate b{font-size:13px;width:40px;text-align:right}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;background:var(--accent-soft);
+  color:var(--accent);border-radius:999px;padding:1px 4px 1px 10px}
+.pill button{border:none;background:none;color:inherit;padding:0 6px;font-size:14px;line-height:1}
+details.pricing{margin-top:24px}
+details.pricing summary{font-weight:600}
+details.pricing p{margin:12px 0}
+details.pricing ul{margin:12px 0 0;padding-left:20px;color:var(--muted)}
+details.pricing li{margin-bottom:4px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border-radius:14px;padding:22px;max-width:420px;width:100%;border:1px solid var(--line)}
+.modal h2{margin:0 0 10px;font-size:18px}
+.modal table{margin:10px 0 16px}
+.modal td{padding:6px 0;border:none}
+.modal td:last-child{text-align:right;font-weight:600}
+.modal .btns{display:flex;gap:8px;justify-content:flex-end}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);
+  padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:640px){
+  .controls .grow{flex-basis:100%}
+  td.t,th.t{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>Google 收錄查詢</h1>
+      <p class="sub">貼上網址，逐條用 ScrapingDog 查 <code>site:網址</code>，判斷是否被 Google 收錄。每條 5 credits，3 天內查過的免費。每條都會抓發布日期，未收錄的再判斷要不要主動提交。</p>
+    </div>
+    <div class="spent">這次開啟已花費<br><b id="spent">0</b> credits</div>
+  </div>
+
+  <div id="demoBanner" class="banner demo" hidden>示範模式：結果是假資料，不會呼叫 ScrapingDog，也不會花額度。</div>
+  <div id="errBanner" class="banner err" hidden></div>
+
+  <div class="card">
+    <label class="lbl" for="keyInput">ScrapingDog API key</label>
+    <div class="row" id="keyEdit">
+      <input id="keyInput" type="password" placeholder="貼上 API key" autocomplete="off">
+      <label class="chk"><input type="checkbox" id="remember" checked> 記在這台電腦</label>
+      <button id="keySave" class="primary">儲存</button>
+    </div>
+    <div class="row" id="keyView" hidden>
+      <span class="keyok" id="keyMask"></span>
+      <button class="small" id="keyChange">更換</button>
+      <button class="small" id="keyForget">清除</button>
+    </div>
+    <div class="hint">API key 只存在這個瀏覽器，直接送到 api.scrapingdog.com，不經過其他伺服器。</div>
+  </div>
+
+  <div class="card">
+    <label class="lbl" for="input">網址清單</label>
+    <textarea id="input" placeholder="一行一個網址，也可以直接從 Excel 或 Google 試算表整欄貼上&#10;https://example.com/post-1/&#10;https://example.com/post-2/"></textarea>
+    <div class="controls">
+      <div class="grow parsed" id="parsed">尚未貼上網址</div>
+      <label class="chk">地區
+        <select id="region">
+          <option value="">不指定</option>
+          <option value="tw" selected>tw 台灣</option>
+          <option value="hk">hk 香港</option>
+          <option value="cn">cn 中國</option>
+          <option value="jp">jp 日本</option>
+          <option value="kr">kr 韓國</option>
+          <option value="sg">sg 新加坡</option>
+          <option value="my">my 馬來西亞</option>
+          <option value="th">th 泰國</option>
+          <option value="vn">vn 越南</option>
+          <option value="id">id 印尼</option>
+          <option value="ph">ph 菲律賓</option>
+          <option value="in">in 印度</option>
+          <option value="au">au 澳洲</option>
+          <option value="nz">nz 紐西蘭</option>
+          <option value="us">us 美國</option>
+          <option value="ca">ca 加拿大</option>
+          <option value="gb">gb 英國</option>
+          <option value="de">de 德國</option>
+          <option value="fr">fr 法國</option>
+          <option value="es">es 西班牙</option>
+          <option value="it">it 義大利</option>
+          <option value="nl">nl 荷蘭</option>
+          <option value="br">br 巴西</option>
+          <option value="mx">mx 墨西哥</option>
+          <option value="ae">ae 阿聯</option>
+        </select>
+      </label>
+      <label class="chk"><input type="checkbox" id="refresh"> 不用快取，全部重查</label>
+      <button id="clear">清空</button>
+      <button id="start" class="primary" disabled>開始查詢</button>
+      <button id="stop" hidden>停止</button>
+    </div>
+    <details>
+      <summary>進階設定</summary>
+      <div class="controls">
+        <label class="chk">同時查詢數
+          <select id="workers"><option>1</option><option>2</option><option selected>3</option><option>5</option></select>
+        </label>
+        <label class="chk">發布幾天內算「剛發布」
+          <input type="number" id="newDays" min="0" max="365" value="7" class="days">
+        </label>
+        <label class="chk"><input type="checkbox" id="scrapeDate" checked> WordPress 拿不到日期時，用 ScrapingDog 抓網頁（每條 1 credit）</label>
+        <label class="chk"><input type="checkbox" id="demo"> 示範模式（假資料，不花額度）</label>
+        <button class="small" id="clearCache">清除查詢快取</button>
+      </div>
+    </details>
+  </div>
+
+  <div id="results" hidden>
+    <div class="progress"><div id="prog"></div></div>
+    <div class="bar-row section-title">
+      <div>分網域統計 <span class="hint">點網域可以只看該網域的明細</span></div>
+      <button class="small" id="exportDomains">匯出網域統計 CSV</button>
+    </div>
+    <div class="tablewrap domains">
+      <table>
+        <thead><tr><th>網域</th><th class="num">網址數</th><th class="num">已收錄</th><th class="num">未收錄</th><th class="num">需主動提交</th><th class="num">剛發布</th><th class="num">錯誤 / 未查</th><th>收錄率</th></tr></thead>
+        <tbody id="domainBody"></tbody>
+      </table>
+    </div>
+    <div class="section-title">明細 <span id="domainActive"></span></div>
+    <div class="bar-row">
+      <div class="chips" id="chips"></div>
+      <div class="actions">
+        <button class="small" id="copySubmit">複製需主動提交網址</button>
+        <button class="small" id="copyNo">複製未收錄網址</button>
+        <button class="small" id="exportCsv">匯出 CSV</button>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>網址</th><th>狀態</th><th>發布日期</th><th>建議</th><th>Google 顯示網址 / 備註</th><th class="t">查詢時間</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="emptyFilter" hidden>這個分類沒有網址</div>
+    </div>
+  </div>
+
+  <details class="card pricing">
+    <summary>發布日期與建議怎麼判斷</summary>
+    <p>已收錄和未收錄的網址都會抓發布日期。「建議」只針對未收錄的網址判斷，已收錄的只顯示日期和天數。</p>
+    <ul>
+      <li><b>第一步，WordPress API（免費）</b>：用網址最後一段當文章代稱，查網站的 <code>/wp-json/wp/v2/posts</code>，拿 <code>date_gmt</code>。WordPress 網站大多可以直接拿到。</li>
+      <li><b>第二步，抓網頁（每條 1 credit）</b>：WordPress 拿不到時，用 ScrapingDog 抓文章頁面，依序找 <code>article:published_time</code>、<code>datePublished</code>（meta 或 JSON-LD）、其他發布日期 meta、<code>&lt;time datetime&gt;</code>。可以在進階設定關掉。</li>
+      <li><b>天數</b>：查詢時間減掉發布時間，無條件捨去成整天數。</li>
+      <li><b>剛發布</b>：發布天數小於或等於設定值（預設 7 天）。Google 通常需要幾天到一兩週才收錄，先等等。</li>
+      <li><b>需主動提交</b>：超過設定天數還沒收錄，建議到 Search Console 提交網址，或檢查內部連結、sitemap 和 noindex。</li>
+      <li><b>查不到日期</b>：兩種方法都找不到發布日期，需要人工確認。</li>
+    </ul>
+    <p>進階設定裡改天數，表格的建議會馬上重新判斷，不用重查。</p>
+  </details>
+
+  <details class="card pricing">
+    <summary>快取說明</summary>
+    <ul>
+      <li><b>保留 3 天</b>：查過的收錄結果和發布日期存在這台電腦的瀏覽器裡，3 天內再查同一條網址不扣額度，表格會標「快取」。</li>
+      <li><b>依地區分開</b>：收錄結果按地區分開存，換地區查會重新扣額度。發布日期不分地區，共用同一份。</li>
+      <li><b>ScrapingDog 本身沒有快取</b>：每次呼叫都即時抓 Google，每次都扣額度，所以重複查同一條會重複扣。</li>
+      <li><b>想拿最新結果</b>：勾「不用快取，全部重查」。要全部清掉，到進階設定按「清除查詢快取」。</li>
+      <li><b>不跨裝置</b>：換電腦、換瀏覽器或清除瀏覽器資料後，快取就不在了。</li>
+    </ul>
+  </details>
+
+  <details class="card pricing">
+    <summary>價格參考（ScrapingDog Lite 方案）</summary>
+    <p>Lite 方案每月 40 美元，含 200,000 credits。查一條網址扣 5 credits。匯率以 1 美元約 32.4 台幣估算。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>項目</th><th>美元</th><th>台幣</th></tr></thead>
+        <tbody>
+          <tr><td>每 1 credit</td><td>0.0002</td><td>約 0.0065</td></tr>
+          <tr><td>每條網址</td><td>0.001</td><td>約 0.032</td></tr>
+          <tr><td>每 1,000 條網址</td><td>1</td><td>約 32</td></tr>
+          <tr><td>每月額度可查</td><td colspan="2">約 40,000 條網址</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li>年繳是付 10 個月用 12 個月，換算每條約 0.00083 美元，約台幣 0.027 元。</li>
+      <li>上面的單價假設當月額度都有用完，沒用完時實際每條成本會比較高。</li>
+      <li>價格取自 ScrapingDog 官網，匯率參考 2026 年 7 至 8 月資料，實際以帳單和刷卡匯率為準。</li>
+    </ul>
+  </details>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h2 id="mTitle">確認要開始查詢嗎？</h2>
+    <table>
+      <tr><td>要查詢的網址</td><td id="mCount"></td></tr>
+      <tr><td>3 天內查過（免費）</td><td id="mCached"></td></tr>
+      <tr><td>收錄查詢</td><td id="mCredits"></td></tr>
+      <tr><td>抓發布日期（最多）</td><td id="mPub"></td></tr>
+      <tr><td><b>合計最多</b></td><td id="mTotal"></td></tr>
+    </table>
+    <div class="btns">
+      <button id="mCancel">取消</button>
+      <button id="mOk" class="primary">確定查詢</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var API = 'https://api.scrapingdog.com/google/';
+  var CREDITS = 5, SCRAPE_CREDITS = 1, CACHE_DAYS = 3, CACHE_KEY = 'gic_cache_v2';
+  var SCRAPE_API = 'https://api.scrapingdog.com/scrape';
+  var ADV = {'剛發布':'new','需主動提交':'submit','查不到日期':'wait','抓日期中':'run'};
+  var GOOGLE_DOMAIN = 'google.com';  // 一律用 google.com，只用地區代碼（country）區分地區
+  try{ localStorage.removeItem('gic_cache_v1'); }catch(e){}
+  var STATUS = {'待查':'wait','查詢中':'run','已收錄':'ok','未收錄':'no','錯誤':'err','未查':'wait'};
+  var apiKey = '', parsed = [], rows = [], running = false, stopped = false, filter = 'all', spent = 0, domainFilter = '';
+
+  // ---------- 儲存 ----------
+  function store(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+  function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function drop(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  var cache = {};
+  try{ cache = JSON.parse(load(CACHE_KEY) || '{}') || {}; }catch(e){ cache = {}; }
+  (function prune(){
+    var limit = Date.now() - CACHE_DAYS * 864e5;
+    Object.keys(cache).forEach(function(k){ if(!cache[k] || cache[k].ts < limit) delete cache[k]; });
+  })();
+  var saveTimer = null;
+  function saveCache(){ clearTimeout(saveTimer); saveTimer = setTimeout(function(){ store(CACHE_KEY, JSON.stringify(cache)); }, 300); }
+  function cacheId(url){ return normKey(url) + '|' + $('region').value + ($('demo').checked ? '|demo' : ''); }
+  function getCached(url){
+    var c = cache[cacheId(url)];
+    return c && c.ts >= Date.now() - CACHE_DAYS * 864e5 ? c : null;
+  }
+  // 發布日期快取：不分地區
+  function pubId(url){ return 'pub|' + normKey(url) + ($('demo').checked ? '|demo' : ''); }
+  function getPubCached(url){
+    var c = cache[pubId(url)];
+    return c && c.ts >= Date.now() - CACHE_DAYS * 864e5 ? c : null;
+  }
+
+  // ---------- 小工具 ----------
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function toast(msg){ var t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toast.t); toast.t=setTimeout(function(){ t.classList.remove('show'); }, 2000); }
+  function nowStr(){ var d=new Date(), p=function(n){return (n<10?'0':'')+n;};
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  // 比對用：去協定、www、結尾斜線、?、#，解碼中文網址，轉小寫
+  function normKey(u){
+    var s = String(u || '').trim().replace(/^https?:\/\//i, '').replace(/#.*$/, '').replace(/\?.*$/, '');
+    try{ s = decodeURI(s); }catch(e){}
+    s = s.replace(/^www\./i, '').replace(/\/+$/, '');
+    return s.toLowerCase();
+  }
+  function siteQuery(u){ return 'site:' + String(u).trim().replace(/^https?:\/\//i, '').replace(/\/+$/, ''); }
+  function hostOf(u){ return normKey(u).split('/')[0]; }
+
+  // ---------- 解析貼上的內容 ----------
+  function parse(text){
+    var tokens = text.split(/[\s,，、;；|]+/), seen = {}, out = [], dup = 0;
+    tokens.forEach(function(t){
+      t = t.replace(/^["'(<\[「]+|["')>\]」。]+$/g, '');
+      if(!t) return;
+      if(!/^https?:\/\//i.test(t)){
+        if(!/^[a-z0-9¡-￿.-]+\.[a-z¡-￿]{2,}(\/|$)/i.test(t)) return;
+        t = 'https://' + t;
+      }
+      var k = normKey(t);
+      if(!k) return;
+      if(seen[k]){ dup++; return; }
+      seen[k] = 1; out.push(t);
+    });
+    return {urls: out, dup: dup};
+  }
+  function estimate(){
+    var refresh = $('refresh').checked, demo = $('demo').checked;
+    var cached = refresh ? 0 : parsed.filter(getCached).length;
+    var credits = demo ? 0 : (parsed.length - cached) * CREDITS;
+    // 抓日期最多：沒有日期快取的都可能要抓網頁（實際只有 WordPress 拿不到的才扣）
+    var pubMax = (demo || !$('scrapeDate').checked) ? 0 :
+      parsed.filter(function(u){ return refresh || !getPubCached(u); }).length * SCRAPE_CREDITS;
+    return {count: parsed.length, cached: cached, credits: credits, pubMax: pubMax};
+  }
+  function onInput(){
+    store('gic_input', $('input').value);
+    var p = parse($('input').value);
+    parsed = p.urls;
+    if(!parsed.length){
+      $('parsed').textContent = $('input').value.trim() ? '沒有辨識到網址' : '尚未貼上網址';
+    }else{
+      var e = estimate();
+      $('parsed').innerHTML = '辨識到 <b>' + parsed.length.toLocaleString() + '</b> 條網址' +
+        (p.dup ? '（已去除重複 ' + p.dup + ' 條）' : '') +
+        '，預估 <b>' + e.credits.toLocaleString() + '</b> credits' +
+        (e.cached ? '（' + e.cached + ' 條有快取）' : '') +
+        (e.pubMax ? '，抓發布日期最多另加 ' + e.pubMax.toLocaleString() : '');
+    }
+    updateStart();
+  }
+  function updateStart(){
+    $('start').disabled = running || !parsed.length || !(apiKey || $('demo').checked);
+    $('start').title = (!apiKey && !$('demo').checked) ? '請先輸入 API key' : '';
+  }
+
+  // ---------- 呼叫 ScrapingDog ----------
+  function callApi(url){
+    var qs = new URLSearchParams({api_key: apiKey, query: siteQuery(url), filter: '0', domain: GOOGLE_DOMAIN});
+    var country = $('region').value;
+    if(country) qs.set('country', country);
+    var attempt = 0;
+    function tryOnce(){
+      return fetch(API + '?' + qs.toString()).then(function(res){
+        if(res.status === 401 || res.status === 403){
+          return res.text().then(function(t){
+            var err = new Error('API key 無效或額度已用完（HTTP ' + res.status + '）');
+            err.fatal = true; throw err;
+          });
+        }
+        if((res.status === 429 || res.status >= 500) && attempt < 3){
+          attempt++; return sleep(2500 * attempt).then(tryOnce);
+        }
+        if(!res.ok) return res.text().then(function(t){ throw new Error('HTTP ' + res.status + '：' + t.slice(0, 120)); });
+        return res.json();
+      }, function(netErr){
+        if(attempt < 3){ attempt++; return sleep(2000 * attempt).then(tryOnce); }
+        throw new Error('連不到 ScrapingDog，請檢查網路');
+      });
+    }
+    return tryOnce().then(function(data){
+      return (data.organic_results || []).map(function(o){ return o.link; }).filter(Boolean);
+    });
+  }
+  function fakeApi(url){
+    return sleep(300 + Math.random() * 400).then(function(){
+      var h = 0, s = normKey(url);
+      for(var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+      if(h % 10 < 7) return ['https://' + s + '/'];
+      if(h % 10 === 7) return ['https://' + s.split('/')[0] + '/other-page/'];
+      return [];
+    });
+  }
+  function checkOne(url, refresh){
+    if(!refresh){
+      var c = getCached(url);
+      if(c) return Promise.resolve({status:c.status, matched:c.matched, note:c.note, cached:true, at:c.at, credits:0});
+    }
+    var demo = $('demo').checked;
+    return (demo ? fakeApi(url) : callApi(url)).then(function(links){
+      var target = normKey(url), matched = '';
+      links.some(function(l){ if(normKey(l) === target){ matched = l; return true; } });
+      var res = matched
+        ? {status:'已收錄', matched:matched, note:''}
+        : {status:'未收錄', matched:'', note: links.length ? '有 ' + links.length + ' 筆相近結果，但不是這條' : ''};
+      res.at = nowStr();
+      cache[cacheId(url)] = {ts:Date.now(), status:res.status, matched:res.matched, note:res.note, at:res.at};
+      saveCache();
+      res.cached = false; res.credits = demo ? 0 : CREDITS;
+      return res;
+    });
+  }
+
+  // ---------- 發布日期 ----------
+  function fetchTimeout(url, ms){
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var t = ctrl ? setTimeout(function(){ ctrl.abort(); }, ms) : null;
+    return fetch(url, ctrl ? {signal: ctrl.signal} : {}).then(function(r){ clearTimeout(t); return r; },
+      function(e){ clearTimeout(t); throw e; });
+  }
+  function parseDate(v){
+    if(!v) return null;
+    v = String(v).trim();
+    if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(v)) v += 'Z';  // WordPress date_gmt 沒有時區
+    var t = Date.parse(v);
+    if(isNaN(t)) return null;
+    var y = new Date(t).getUTCFullYear();
+    return (y < 1995 || t > Date.now() + 864e5 * 2) ? null : t;
+  }
+  function slugOf(url){
+    try{
+      var u = new URL(url), parts = u.pathname.split('/').filter(Boolean);
+      if(!parts.length) return null;
+      return {origin: u.origin, first: parts[0], depth: parts.length,
+              slug: decodeURIComponent(parts[parts.length - 1]).replace(/\.html?$/i, '')};
+    }catch(e){ return null; }
+  }
+  // 1. WordPress REST API（免費）
+  function getJson(u){
+    return fetchTimeout(u, 10000).then(function(r){
+      if(!r.ok) return null;
+      return r.json().catch(function(){ return null; });
+    }).catch(function(){ return null; });
+  }
+  function wpDate(url){
+    var s = slugOf(url); if(!s) return Promise.resolve(null);
+    var target = normKey(url), host = hostOf(url);
+    var q = 'slug=' + encodeURIComponent(s.slug) + '&_fields=link,date_gmt';
+    // 先試網站根目錄；找不到再試第一層子目錄（WordPress 裝在 /blog、/news 這類情況）
+    var bases = [s.origin];
+    if(s.depth >= 2) bases.push(s.origin + '/' + s.first);
+    function pick(list){
+      if(!Array.isArray(list)) return null;
+      var hit = list.filter(function(p){ return p && normKey(p.link) === target; })[0] ||
+        (list.length === 1 && list[0] && hostOf(list[0].link) === host ? list[0] : null);
+      var t = hit && parseDate(hit.date_gmt);
+      return t ? {t: t, src: 'WordPress API'} : null;
+    }
+    function tryBase(i){
+      if(i >= bases.length) return Promise.resolve(null);
+      var b = bases[i];
+      return getJson(b + '/wp-json/wp/v2/posts?' + q).then(function(list){
+        var d = pick(list); if(d) return d;
+        if(list === null){  // /wp-json 不能用，改試 ?rest_route=
+          return getJson(b + '/?rest_route=/wp/v2/posts&' + q).then(function(l2){ return pick(l2) || tryBase(i + 1); });
+        }
+        return getJson(b + '/wp-json/wp/v2/pages?' + q).then(function(l3){ return pick(l3) || tryBase(i + 1); });
+      });
+    }
+    return tryBase(0);
+  }
+  // 2. 從 HTML 找發布日期
+  function dateFromHtml(html){
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var metas = [
+      ['meta[property="article:published_time"]', 'article:published_time'],
+      ['meta[name="article:published_time"]', 'article:published_time'],
+      ['meta[itemprop="datePublished"]', 'datePublished'],
+      ['meta[property="og:published_time"]', 'og:published_time'],
+      ['meta[name="pubdate"]', 'pubdate'], ['meta[name="publishdate"]', 'publishdate'],
+      ['meta[name="publish-date"]', 'publish-date'], ['meta[name="parsely-pub-date"]', 'parsely-pub-date'],
+      ['meta[name="sailthru.date"]', 'sailthru.date'], ['meta[name="DC.date.issued"]', 'DC.date.issued'],
+      ['meta[name="date"]', 'meta date']
+    ];
+    for(var i = 0; i < metas.length; i++){
+      var el = doc.querySelector(metas[i][0]);
+      var t = el && parseDate(el.getAttribute('content'));
+      if(t) return {t: t, src: metas[i][1]};
+    }
+    var found = null;
+    function walk(o){
+      if(found || !o || typeof o !== 'object') return;
+      if(Array.isArray(o)){ o.forEach(walk); return; }
+      if(o.datePublished){ var t = parseDate(o.datePublished); if(t){ found = t; return; } }
+      Object.keys(o).forEach(function(k){ walk(o[k]); });
+    }
+    doc.querySelectorAll('script[type="application/ld+json"]').forEach(function(s){
+      if(found) return;
+      try{ walk(JSON.parse(s.textContent)); }catch(e){}
+    });
+    if(found) return {t: found, src: 'JSON-LD datePublished'};
+    var tm = doc.querySelector('time[itemprop="datePublished"], time.published, time.entry-date, .published time, .post-date time, article time[datetime], time[datetime]');
+    var t2 = tm && parseDate(tm.getAttribute('datetime'));
+    if(t2) return {t: t2, src: '<time>'};
+    return null;
+  }
+  function scrapeDate(url){
+    var qs = new URLSearchParams({api_key: apiKey, url: url, dynamic: 'false'});
+    return fetchTimeout(SCRAPE_API + '?' + qs.toString(), 60000).then(function(r){
+      if(r.status === 401 || r.status === 403){
+        var err = new Error('抓網頁失敗：API key 無效或額度已用完'); err.fatal = true; throw err;
+      }
+      if(!r.ok) return {fail: true};
+      return r.text().then(function(html){ var d = dateFromHtml(html); return d ? d : {none: true}; });
+    }, function(){ return {fail: true}; });
+  }
+  function fakePub(url){
+    return sleep(150).then(function(){
+      var h = 7, s = normKey(url);
+      for(var i = 0; i < s.length; i++) h = (h * 17 + s.charCodeAt(i)) >>> 0;
+      if(h % 9 === 0) return null;
+      return {t: Date.now() - ((h >>> 3) % 40) * 864e5 - 3600e3, src: h % 2 ? 'WordPress API' : 'article:published_time'};
+    });
+  }
+  // 回傳 {t, src, credits, cached}；t 為 null 代表查不到
+  function getPubDate(url, refresh){
+    if(!refresh){
+      var c = getPubCached(url);
+      if(c) return Promise.resolve({t: c.t, src: c.src, credits: 0, cached: true});
+    }
+    function save(d, credits){
+      cache[pubId(url)] = {ts: Date.now(), t: d ? d.t : null, src: d ? d.src : ''};
+      saveCache();
+      return {t: d ? d.t : null, src: d ? d.src : '', credits: credits, cached: false};
+    }
+    if($('demo').checked) return fakePub(url).then(function(d){ return save(d, 0); });
+    return wpDate(url).then(function(d){
+      if(d) return save(d, 0);
+      if(!$('scrapeDate').checked || !apiKey) return save(null, 0);
+      return scrapeDate(url).then(function(s){
+        if(s.fail) return {t: null, src: '', credits: 0, cached: false};  // 抓取失敗不存快取，下次再試
+        return save(s.none ? null : s, SCRAPE_CREDITS);
+      });
+    });
+  }
+  function daysSince(t, at){
+    var ref = at ? Date.parse(at.replace(' ', 'T')) : Date.now();
+    if(isNaN(ref)) ref = Date.now();
+    return Math.max(0, Math.floor((ref - t) / 864e5));
+  }
+  function dateStr(t){
+    var d = new Date(t), p = function(n){ return (n<10?'0':'') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+  }
+  function newDays(){ var n = parseInt($('newDays').value, 10); return isNaN(n) || n < 0 ? 7 : n; }
+  function advice(r){
+    if(r.status !== '未收錄') return '';
+    if(r.pubLoading) return '抓日期中';
+    if(r.pubT == null) return r.pubDone ? '查不到日期' : '';
+    return r.days <= newDays() ? '剛發布' : '需主動提交';
+  }
+
+  // ---------- 結果表格 ----------
+  function buildTable(){
+    var tb = $('tbody'); tb.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    rows.forEach(function(r, i){
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td class="n">' + (i+1) + '</td><td class="u"><a target="_blank" rel="noopener" href="' +
+        esc(r.url) + '">' + esc(r.url) + '</a></td><td class="s"></td><td class="pd"></td><td class="adv"></td><td class="note"></td><td class="t"></td>';
+      r.el = tr; frag.appendChild(tr); paint(r);
+    });
+    tb.appendChild(frag);
+    $('results').hidden = false;
+    refreshSummary();
+  }
+  function paint(r){
+    var c = r.el.children;
+    c[2].innerHTML = '<span class="tag ' + (STATUS[r.status] || 'wait') + '">' + esc(r.status) + '</span>' +
+      (r.cached ? '<span class="cache">快取</span>' : '');
+    var shown = r.matched && normKey(r.matched) === normKey(r.url) && r.matched.replace(/\/$/,'') !== r.url.replace(/\/$/,'') ? r.matched : '';
+    c[3].innerHTML = r.pubT != null
+      ? esc(dateStr(r.pubT)) + '<small>' + r.days + ' 天前 · ' + esc(r.pubSrc || '') + (r.pubCached ? ' · 快取' : '') + '</small>'
+      : r.pubLoading ? '<small>抓日期中…</small>'
+      : (r.pubDone && r.status === '已收錄') ? '<small>查不到</small>' : '';
+    var a = advice(r);
+    c[4].innerHTML = a ? '<span class="tag ' + ADV[a] + '">' + esc(a) + '</span>' : '';
+    c[5].textContent = [shown, r.note].filter(Boolean).join('　');
+    c[6].textContent = r.at || '';
+    r.el.style.display = visible(r) ? '' : 'none';
+  }
+  function inDomain(r){ return !domainFilter || r.host === domainFilter; }
+  function visible(r){ return inDomain(r) && (filter === 'all' || r.status === filter || advice(r) === filter); }
+  function counts(all){
+    var list = all ? rows : rows.filter(inDomain), c = {all: list.length};
+    list.forEach(function(r){
+      c[r.status] = (c[r.status] || 0) + 1;
+      var a = advice(r); if(a) c[a] = (c[a] || 0) + 1;
+    });
+    return c;
+  }
+  function domainStats(){
+    var map = {}, order = [];
+    rows.forEach(function(r){
+      var d = map[r.host];
+      if(!d){ d = map[r.host] = {host:r.host, total:0, ok:0, no:0, submit:0, fresh:0, other:0}; order.push(d); }
+      d.total++;
+      if(r.status === '已收錄') d.ok++;
+      else if(r.status === '未收錄') d.no++;
+      else if(r.status === '錯誤' || r.status === '未查') d.other++;
+      var a = advice(r);
+      if(a === '需主動提交') d.submit++;
+      else if(a === '剛發布') d.fresh++;
+    });
+    order.sort(function(a, b){ return b.total - a.total || a.host.localeCompare(b.host); });
+    order.forEach(function(d){ var c = d.ok + d.no; d.pct = c ? Math.round(d.ok / c * 100) : null; });
+    return order;
+  }
+  function renderDomains(){
+    $('domainBody').innerHTML = domainStats().map(function(d){
+      var pct = d.pct;
+      return '<tr data-host="' + esc(d.host) + '"' + (d.host === domainFilter ? ' class="on"' : '') + '>' +
+        '<td class="d">' + esc(d.host) + '</td>' +
+        '<td class="num">' + d.total + '</td><td class="num">' + d.ok + '</td><td class="num">' + d.no + '</td>' +
+        '<td class="num">' + (d.submit ? '<b style="color:var(--bad)">' + d.submit + '</b>' : '') + '</td>' +
+        '<td class="num">' + (d.fresh || '') + '</td>' +
+        '<td class="num">' + (d.other || '') + '</td>' +
+        '<td><div class="rate"><div class="bar"' + (pct === null ? ' style="background:var(--surface-2)"' : '') + '><i style="width:' +
+        (pct || 0) + '%"></i></div><b>' + (pct === null ? '–' : pct + '%') + '</b></div></td></tr>';
+    }).join('');
+    $('domainActive').innerHTML = domainFilter
+      ? '<span class="pill">' + esc(domainFilter) + '<button id="domainClear" title="顯示全部網域" aria-label="顯示全部網域">×</button></span>' : '';
+  }
+  $('domainBody').addEventListener('click', function(e){
+    var tr = e.target.closest('tr'); if(!tr) return;
+    var h = tr.getAttribute('data-host');
+    domainFilter = domainFilter === h ? '' : h;
+    rows.forEach(paint); refreshSummary();
+  });
+  $('domainActive').addEventListener('click', function(e){
+    if(e.target.id !== 'domainClear') return;
+    domainFilter = ''; rows.forEach(paint); refreshSummary();
+  });
+  function refreshSummary(){
+    var c = counts(), order = ['all','已收錄','未收錄','需主動提交','剛發布','查不到日期','錯誤','查詢中','待查','未查'];
+    $('chips').innerHTML = order.filter(function(k){ return k === 'all' || c[k]; }).map(function(k){
+      return '<span class="chip' + (filter === k ? ' on' : '') + '" data-f="' + k + '">' +
+        (k === 'all' ? '全部' : k) + ' ' + (c[k] || 0) + '</span>';
+    }).join('');
+    var a = counts(true);
+    var done = (a['已收錄']||0) + (a['未收錄']||0) + (a['錯誤']||0) + (a['未查']||0);
+    $('prog').style.width = rows.length ? (done / rows.length * 100) + '%' : '0';
+    $('emptyFilter').hidden = rows.some(visible);
+    renderDomains();
+    $('spent').textContent = spent.toLocaleString();
+  }
+  $('chips').addEventListener('click', function(e){
+    var f = e.target.getAttribute('data-f'); if(!f) return;
+    filter = f; rows.forEach(paint); refreshSummary();
+  });
+
+  // ---------- 執行 ----------
+  function askConfirm(e){
+    $('mCount').textContent = e.count.toLocaleString() + ' 條';
+    $('mCached').textContent = e.cached.toLocaleString() + ' 條';
+    var demo = $('demo').checked;
+    $('mCredits').textContent = demo ? '0（示範模式）' : e.credits.toLocaleString() + ' credits';
+    $('mPub').textContent = demo ? '0（示範模式）' : !$('scrapeDate').checked ? '0（只用 WordPress API）' :
+      e.pubMax.toLocaleString() + ' credits';
+    $('mTotal').textContent = demo ? '0' : (e.credits + e.pubMax).toLocaleString() + ' credits';
+    $('modal').classList.add('show'); $('mOk').focus();
+    return new Promise(function(res){
+      function done(v){ $('modal').classList.remove('show'); $('mOk').onclick = $('mCancel').onclick = null; res(v); }
+      $('mOk').onclick = function(){ done(true); };
+      $('mCancel').onclick = function(){ done(false); };
+    });
+  }
+  function setRunning(v){
+    running = v;
+    $('start').hidden = v; $('stop').hidden = !v; $('stop').disabled = false;
+    ['input','region','refresh','clear','demo','workers','clearCache','scrapeDate'].forEach(function(id){ $(id).disabled = v; });
+    updateStart();
+  }
+  function showErr(msg){ $('errBanner').textContent = msg || ''; $('errBanner').hidden = !msg; }
+
+  $('start').addEventListener('click', function(){
+    if(running || !parsed.length) return;
+    showErr('');
+    askConfirm(estimate()).then(function(ok){
+      if(!ok) return;
+      filter = 'all'; domainFilter = '';
+      rows = parsed.map(function(u){ return {url:u, host:hostOf(u), status:'待查', pubT:null}; });
+      buildTable(); run();
+    });
+  });
+  $('stop').addEventListener('click', function(){ stopped = true; $('stop').disabled = true; toast('正在停止，等目前這幾條查完'); });
+
+  function run(){
+    setRunning(true); stopped = false;
+    var refresh = $('refresh').checked, idx = 0, n = parseInt($('workers').value, 10) || 3;
+    var lastPaint = 0;
+    function next(){
+      if(stopped || idx >= rows.length) return Promise.resolve();
+      var r = rows[idx++];
+      r.status = '查詢中'; paint(r);
+      return checkOne(r.url, refresh).then(function(res){
+        r.status = res.status; r.matched = res.matched; r.note = res.note;
+        r.cached = res.cached; r.at = res.at; spent += res.credits;
+        if((r.status !== '未收錄' && r.status !== '已收錄') || stopped) return;
+        r.pubLoading = true; paint(r);
+        return getPubDate(r.url, refresh).then(function(p){
+          r.pubT = p.t; r.pubSrc = p.src; r.pubCached = p.cached; spent += p.credits;
+          if(p.t != null) r.days = daysSince(p.t, r.at);
+        }, function(err){
+          if(err.fatal){ stopped = true; showErr('已停止：' + err.message + '。'); }
+        }).then(function(){ r.pubLoading = false; r.pubDone = true; });
+      }, function(err){
+        r.status = '錯誤'; r.note = err.message;
+        if(err.fatal){ stopped = true; showErr('已停止：' + err.message + '。請確認 API key 或到 ScrapingDog 後台查看額度。'); }
+      }).then(function(){
+        paint(r);
+        var t = Date.now(); if(t - lastPaint > 150){ lastPaint = t; refreshSummary(); }
+        return r.cached ? Promise.resolve().then(next) : next();
+      });
+    }
+    var ws = []; for(var i = 0; i < n; i++) ws.push(next());
+    Promise.all(ws).then(function(){
+      rows.forEach(function(r){ if(r.status === '待查'){ r.status = '未查'; paint(r); } });
+      refreshSummary(); setRunning(false); onInput();
+      var c = counts();
+      toast(stopped ? '已停止' : '查詢完成：已收錄 ' + (c['已收錄'] || 0) + ' / ' + rows.length);
+    });
+  }
+
+  // ---------- 匯出 ----------
+  function downloadCsv(lines, prefix){
+    var csv = lines.map(function(l){ return l.map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(','); }).join('\r\n');
+    var blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8'});
+    var a = document.createElement('a'), d = new Date(), p = function(n){ return (n<10?'0':'') + n; };
+    a.href = URL.createObjectURL(blob);
+    a.download = prefix + '_' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  $('exportCsv').addEventListener('click', function(){
+    if(!rows.length) return;
+    var lines = [['網域','網址','狀態','發布日期','發布天數','日期來源','建議','Google 顯示網址','備註','是否用快取','查詢時間']];
+    rows.forEach(function(r){
+      lines.push([r.host, r.url, r.status, r.pubT != null ? dateStr(r.pubT) : '', r.pubT != null ? r.days : '',
+        r.pubSrc || '', advice(r), r.matched||'', r.note||'', r.cached?'是':'', r.at||'']);
+    });
+    downloadCsv(lines, '收錄查詢');
+  });
+  $('exportDomains').addEventListener('click', function(){
+    if(!rows.length) return;
+    var lines = [['網域','網址數','已收錄','未收錄','需主動提交','剛發布','錯誤或未查','收錄率']];
+    domainStats().forEach(function(d){
+      lines.push([d.host, d.total, d.ok, d.no, d.submit, d.fresh, d.other, d.pct === null ? '' : d.pct + '%']);
+    });
+    downloadCsv(lines, '收錄查詢_網域統計');
+  });
+  function copyList(test, label){
+    var list = rows.filter(function(r){ return test(r) && inDomain(r); }).map(function(r){ return r.url; });
+    if(!list.length){ toast('目前沒有' + label + '的網址'); return; }
+    var text = list.join('\n'), msg = '已複製 ' + list.length + ' 條' + label + '網址';
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); toast(msg); }catch(e){ toast('複製失敗'); }
+      ta.remove();
+    }
+    if(navigator.clipboard){ navigator.clipboard.writeText(text).then(function(){ toast(msg); }, fallback); }
+    else fallback();
+  }
+  $('copyNo').addEventListener('click', function(){ copyList(function(r){ return r.status === '未收錄'; }, '未收錄'); });
+  $('copySubmit').addEventListener('click', function(){ copyList(function(r){ return advice(r) === '需主動提交'; }, '需主動提交'); });
+  $('newDays').addEventListener('input', function(){ store('gic_newdays', $('newDays').value); rows.forEach(paint); refreshSummary(); });
+  $('scrapeDate').addEventListener('change', function(){ store('gic_scrape', $('scrapeDate').checked ? '1' : '0'); onInput(); });
+
+  // ---------- API key ----------
+  function showKey(){
+    var has = !!apiKey;
+    $('keyEdit').hidden = has; $('keyView').hidden = !has;
+    if(has) $('keyMask').textContent = '已設定（…' + apiKey.slice(-4) + '）';
+    updateStart();
+  }
+  $('keySave').addEventListener('click', function(){
+    var k = $('keyInput').value.trim();
+    if(!k || /\s/.test(k)){ toast('API key 格式不對'); return; }
+    apiKey = k; $('keyInput').value = '';
+    if($('remember').checked) store('gic_key', k); else drop('gic_key');
+    showKey(); toast('API key 已設定');
+  });
+  $('keyInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('keySave').click(); });
+  $('keyChange').addEventListener('click', function(){ $('keyEdit').hidden = false; $('keyView').hidden = true; $('keyInput').focus(); });
+  $('keyForget').addEventListener('click', function(){ apiKey = ''; drop('gic_key'); showKey(); toast('已清除 API key'); });
+
+  // ---------- 其他 ----------
+  $('clear').addEventListener('click', function(){ $('input').value = ''; onInput(); $('input').focus(); });
+  $('input').addEventListener('input', onInput);
+  $('region').addEventListener('change', function(){ store('gic_region', $('region').value); onInput(); });
+  $('refresh').addEventListener('change', onInput);
+  $('demo').addEventListener('change', function(){ $('demoBanner').hidden = !$('demo').checked; onInput(); });
+  $('clearCache').addEventListener('click', function(){ cache = {}; drop(CACHE_KEY); onInput(); toast('已清除查詢快取'); });
+
+  apiKey = load('gic_key') || '';
+  var saved = load('gic_input'); if(saved) $('input').value = saved;
+  var nd = load('gic_newdays'); if(nd !== null && nd !== '') $('newDays').value = nd;
+  if(load('gic_scrape') === '0') $('scrapeDate').checked = false;
+  var reg = load('gic_region');
+  if(reg !== null && $('region').querySelector('option[value="' + reg + '"]')) $('region').value = reg;
+  showKey(); onInput();
+})();
+</script>
+</body>
+</html>
